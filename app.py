@@ -1,31 +1,28 @@
-import os
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, abort
 import pdfkit
+import os
 
-app = Flask(__name__, template_folder="templates")  # تحديد المجلد الصحيح للقوالب
+app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def lesson_plan():
     if request.method == 'POST':
-        lesson_data = {
-            "عنوان الدرس": request.form['lesson_title'],
-            "الفصل": request.form['grade_level'],
-            "الحصة حسب الجدول": request.form['session_schedule'],
-            "التهيئة الحافزة": request.form['motivation'],
-            "المفاهيم الجديدة": request.form['new_concepts'],
-            "عملية التعليم والتعلم": request.form['learning_process'],
-            "نواتج التعلم": request.form['learning_outcomes'],
-            "خطوات الدرس": request.form['lesson_steps'],
-            "التقييم": request.form['assessment'],
-            "الزمن": request.form['duration'],
-            "طرائق التدريس": request.form['teaching_methods'],
-            "الأنشطة والوسائل المستخدمة": request.form['activities_and_tools'],
-            "مهارات القرن الواحد والعشرين": request.form['twenty_first_century_skills'],
-            "الربط مع المواد الأخرى": request.form['cross_subject_links'],
-            "المواطنة والمسئولية": request.form['citizenship_and_responsibility'],
-            "الأنشطة اللاصفية / التكليفات": request.form['assignments']
-        }
+        required_fields = [
+            'lesson_title', 'grade_level', 'session_schedule', 'motivation',
+            'new_concepts', 'learning_process', 'learning_outcomes', 'lesson_steps',
+            'assessment', 'duration', 'teaching_methods', 'activities_and_tools',
+            'twenty_first_century_skills', 'cross_subject_links',
+            'citizenship_and_responsibility', 'assignments'
+        ]
+
+        # التحقق من وجود جميع الحقول المطلوبة
+        for field in required_fields:
+            if field not in request.form or not request.form[field].strip():
+                return "خطأ: يرجى ملء جميع الحقول المطلوبة.", 400
+
+        lesson_data = {field: request.form[field] for field in required_fields}
         
+        # إنشاء HTML للـ PDF
         html_content = render_template('lesson_plan_template.html', lesson_data=lesson_data)
         pdf_file = "lesson_plan.pdf"
         pdfkit.from_string(html_content, pdf_file)
