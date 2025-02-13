@@ -1,47 +1,39 @@
-from flask import Flask, render_template, request, send_file, abort
+from flask import Flask, render_template, request, send_file
 import pdfkit
 import os
 
-app = Flask(__name__, template_folder="templates")
+app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def lesson_plan():
-    try:
-        if request.method == 'POST':
-            required_fields = [
-                'lesson_title', 'grade_level', 'session_schedule', 'motivation',
-                'new_concepts', 'learning_process', 'learning_outcomes', 'lesson_steps',
-                'assessment', 'duration', 'teaching_methods', 'activities_and_tools',
-                'twenty_first_century_skills', 'cross_subject_links',
-                'citizenship_and_responsibility', 'assignments'
-            ]
-
-            # التحقق من الحقول المطلوبة
-            for field in required_fields:
-                if field not in request.form or not request.form[field].strip():
-                    return "خطأ: جميع الحقول مطلوبة!", 400
-
-            lesson_data = {field: request.form[field] for field in required_fields}
-
-            # التحقق من وجود قالب HTML قبل محاولة استخدامه
-            template_path = os.path.join("templates", "lesson_plan_template.html")
-            if not os.path.exists(template_path):
-                return "خطأ: ملف القالب `lesson_plan_template.html` غير موجود!", 500
-
-            html_content = render_template('lesson_plan_template.html', lesson_data=lesson_data)
-
-            # التحقق من تثبيت `wkhtmltopdf`
-            pdfkit_config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
-            pdf_file = "lesson_plan.pdf"
-
-            pdfkit.from_string(html_content, pdf_file, configuration=pdfkit_config)
-
-            return send_file(pdf_file, as_attachment=True)
-
-        return render_template('form.html')
-
-    except Exception as e:
-        return f"حدث خطأ داخلي: {str(e)}", 500
+    if request.method == 'POST':
+        lesson_data = {
+            "عنوان الدرس": request.form.get('lesson_title', 'اضف عنوان الدرس هنا'),
+            "الفصل": request.form.get('grade_level', 'اضف الفصل هنا'),
+            "الحصة حسب الجدول": request.form.get('session_schedule', 'اضف الحصة هنا'),
+            "التهيئة الحافزة": request.form.get('motivation', 'اضف التهيئة الحافزة هنا'),
+            "المفاهيم الجديدة": request.form.get('new_concepts', 'اضف المفاهيم الجديدة هنا'),
+            "عملية التعليم والتعلم": request.form.get('learning_process', 'اضف عملية التعليم والتعلم هنا'),
+            "نواتج التعلم": request.form.get('learning_outcomes', 'اضف نواتج التعلم هنا'),
+            "خطوات الدرس": request.form.get('lesson_steps', 'اضف خطوات الدرس هنا'),
+            "التقييم": request.form.get('assessment', 'اضف التقييم هنا'),
+            "الزمن": request.form.get('duration', 'اضف الزمن هنا'),
+            "طرائق التدريس": request.form.get('teaching_methods', 'اضف طرائق التدريس هنا'),
+            "الأنشطة والوسائل المستخدمة": request.form.get('activities_and_tools', 'اضف الأنشطة والوسائل المستخدمة هنا'),
+            "مهارات القرن الواحد والعشرين": request.form.get('twenty_first_century_skills', 'اضف مهارات القرن الواحد والعشرين هنا'),
+            "الربط مع المواد الأخرى": request.form.get('cross_subject_links', 'اضف الربط مع المواد الأخرى هنا'),
+            "المواطنة والمسئولية": request.form.get('citizenship_and_responsibility', 'اضف المواطنة والمسئولية هنا'),
+            "الأنشطة اللاصفية / التكليفات": request.form.get('assignments', 'اضف الأنشطة اللاصفية / التكليفات هنا')
+        }
+        
+        # Create HTML content for PDF
+        html_content = render_template('lesson_plan_template.html', lesson_data=lesson_data)
+        pdf_file = "lesson_plan.pdf"
+        pdfkit.from_string(html_content, pdf_file)
+        
+        return send_file(pdf_file, as_attachment=True)
+    
+    return render_template('form.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
