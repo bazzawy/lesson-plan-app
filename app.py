@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, send_file
 import pdfkit
 import os
+from flask import Flask, render_template, request, send_file
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 
 @app.route('/', methods=['GET', 'POST'])
 def lesson_plan():
@@ -26,13 +26,18 @@ def lesson_plan():
             "الأنشطة اللاصفية / التكليفات": request.form.get('assignments', 'اضف الأنشطة اللاصفية / التكليفات هنا')
         }
         
-        # Create HTML content for PDF
+        # توليد HTML من القالب
         html_content = render_template('lesson_plan_template.html', lesson_data=lesson_data)
         pdf_file = "lesson_plan.pdf"
-        pdfkit.from_string(html_content, pdf_file)
+
+        # ضبط مسار `wkhtmltopdf`
+        pdfkit_config = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
         
+        # توليد الـ PDF باستخدام `pdfkit`
+        pdfkit.from_string(html_content, pdf_file, configuration=pdfkit_config)
+
         return send_file(pdf_file, as_attachment=True)
-    
+
     return render_template('form.html')
 
 if __name__ == '__main__':
