@@ -1,0 +1,16 @@
+<!-- templates/lesson_plan_template.html -->
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>خطة الدرس</title>
+</head>
+<body>
+    <h1>خطة الدرس</h1>
+    <ul>
+        {% for key, value in lesson_data.items() %}
+        <li><strong>{{ key }}:</strong> {{ value }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
