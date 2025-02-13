@@ -1,8 +1,8 @@
+import os
 from flask import Flask, render_template, request, send_file
 import pdfkit
-import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")  # تحديد المجلد الصحيح للقوالب
 
 @app.route('/', methods=['GET', 'POST'])
 def lesson_plan():
@@ -26,7 +26,6 @@ def lesson_plan():
             "الأنشطة اللاصفية / التكليفات": request.form['assignments']
         }
         
-        # Create HTML content for PDF
         html_content = render_template('lesson_plan_template.html', lesson_data=lesson_data)
         pdf_file = "lesson_plan.pdf"
         pdfkit.from_string(html_content, pdf_file)
